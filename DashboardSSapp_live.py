@@ -17,73 +17,49 @@ st.set_page_config(
 # Custom Styling CSS (Modern Glassmorphism & Visual Aesthetics)
 st.markdown("""
     <style>
-    /* Global Styling */
     .main { background-color: #f8fafc; }
     
-    /* Header Styling */
     .header-container {
         background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
         padding: 24px;
         border-radius: 16px;
         color: white;
-        margin-bottom: 25px;
+        margin-bottom: 20px;
         box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
     }
     
-    /* Metric Card Styling */
+    .executive-box {
+        background: #ffffff;
+        border-left: 5px solid #2563eb;
+        border-radius: 12px;
+        padding: 16px 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+    }
+
     .metric-card {
         background-color: #ffffff;
         border-radius: 14px;
-        padding: 20px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        padding: 18px;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         border-left: 6px solid #2563eb;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        transition: transform 0.2s ease;
     }
-    .metric-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    }
+    .metric-card:hover { transform: translateY(-2px); }
     .metric-card.close { border-left-color: #10b981; }
     .metric-card.open { border-left-color: #f59e0b; }
     .metric-card.notreg { border-left-color: #ef4444; }
     
-    .metric-title {
-        font-size: 0.825rem;
-        font-weight: 700;
-        text-transform: uppercase;
-        color: #64748b;
-        letter-spacing: 0.5px;
-    }
-    .metric-value {
-        font-size: 2rem;
-        font-weight: 800;
-        color: #0f172a;
-        margin-top: 8px;
-    }
-    .metric-sub {
-        font-size: 0.8rem;
-        color: #94a3b8;
-        margin-top: 4px;
-    }
+    .metric-title { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: #64748b; }
+    .metric-value { font-size: 1.8rem; font-weight: 800; color: #0f172a; margin-top: 6px; }
+    .metric-sub { font-size: 0.8rem; color: #94a3b8; margin-top: 4px; }
 
-    /* Container Box for Charts */
     .chart-card {
         background: #ffffff;
         border-radius: 16px;
-        padding: 16px;
+        padding: 18px;
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
         margin-bottom: 20px;
-    }
-
-    /* Primary Button Customization */
-    .stButton>button {
-        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
-        color: white;
-        border-radius: 10px;
-        border: none;
-        font-weight: 600;
-        padding: 10px 20px;
-        box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
     }
     </style>
 """, unsafe_allow_html=True)
@@ -93,23 +69,19 @@ SHEET_URL_DATA = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRoRFG_w4aDY6_
 SHEET_URL_TARGET = "https://docs.google.com/spreadsheets/d/1msjcr5f3WIMvKpW9jJU52Jns-V5Xx3VM/export?format=csv&gid=507573436"
 
 def clean_str(val):
-    if pd.isna(val) or val is None:
-        return ""
+    if pd.isna(val) or val is None: return ""
     return re.sub(r'[^a-zA-Z0-9]', '', str(val)).upper().strip()
 
 def excel_col_to_index(col):
     col = col.upper()
     idx = 0
-    for char in col:
-        idx = idx * 26 + (ord(char) - ord('A') + 1)
+    for char in col: idx = idx * 26 + (ord(char) - ord('A') + 1)
     return idx - 1
 
 def is_flexible_match(filter_val, target_clean):
-    if filter_val == 'ALL' or not filter_val or not target_clean:
-        return True
+    if filter_val == 'ALL' or not filter_val or not target_clean: return True
     f, t = clean_str(filter_val), clean_str(target_clean)
-    if f == t:
-        return True
+    if f == t: return True
     if '/' in f or '/' in t:
         parts_f = set(filter(None, f.split('/')))
         parts_t = set(filter(None, t.split('/')))
@@ -117,13 +89,10 @@ def is_flexible_match(filter_val, target_clean):
     return (f in t) or (t in f)
 
 def clean_num(val):
-    if pd.isna(val) or val is None or val == '':
-        return 0.0
+    if pd.isna(val) or val is None or val == '': return 0.0
     val_str = re.sub(r'[^0-9.]', '', str(val).strip().replace(',', '.'))
-    try:
-        return float(val_str)
-    except ValueError:
-        return 0.0
+    try: return float(val_str)
+    except ValueError: return 0.0
 
 @st.cache_data(ttl=60)
 def load_csv_generic(url):
@@ -136,43 +105,21 @@ def load_csv_generic(url):
 
 def make_styled_combo_chart(categories, target_vals, actual_vals, title):
     fig = go.Figure()
-    
-    # Gradient Bar Chart
     fig.add_trace(go.Bar(
-        x=categories, 
-        y=actual_vals, 
-        name='Aktual', 
-        marker_color='#3b82f6',
-        marker_line_color='#2563eb',
-        marker_line_width=1.5,
-        opacity=0.85,
-        text=actual_vals, 
-        textposition='auto',
-        textfont=dict(weight="bold", color="#ffffff")
+        x=categories, y=actual_vals, name='Aktual', 
+        marker_color='#3b82f6', opacity=0.85, text=actual_vals, textposition='auto'
     ))
-    
-    # Styled Line Chart
     fig.add_trace(go.Scatter(
-        x=categories, 
-        y=target_vals, 
-        name='Target', 
-        mode='lines+markers+text',
-        line=dict(color='#0f172a', width=3, dash='solid'),
-        marker=dict(size=8, color='#0f172a', symbol='circle'),
-        text=target_vals,
-        textposition='top center',
-        textfont=dict(weight="bold", color='#0f172a')
+        x=categories, y=target_vals, name='Target', mode='lines+markers+text',
+        line=dict(color='#0f172a', width=3), marker=dict(size=7, color='#0f172a'),
+        text=target_vals, textposition='top center'
     ))
-    
     fig.update_layout(
-        title=dict(text=f"<b>{title}</b>", font=dict(size=15, color='#0f172a', family="sans-serif")),
-        margin=dict(l=20, r=20, t=50, b=30),
-        height=340,
-        paper_bgcolor='rgba(0,0,0,0)',
-        plot_bgcolor='rgba(0,0,0,0)',
+        title=dict(text=f"<b>{title}</b>", font=dict(size=14, color='#0f172a')),
+        margin=dict(l=20, r=20, t=40, b=20), height=320,
+        paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-        xaxis=dict(showgrid=False, tickfont=dict(color='#64748b')),
-        yaxis=dict(showgrid=True, gridcolor='#f1f5f9', tickfont=dict(color='#64748b'))
+        xaxis=dict(showgrid=False), yaxis=dict(showgrid=True, gridcolor='#f1f5f9')
     )
     return fig
 
@@ -181,12 +128,11 @@ head_col1, head_col2 = st.columns([3, 1])
 with head_col1:
     st.markdown("""
         <div class="header-container">
-            <h1 style="margin:0; font-size: 1.8rem;">🚀 Dashboard Pemantauan Sumbang Saran</h1>
-            <p style="margin:4px 0 0 0; color: #94a3b8; font-size: 0.95rem;">Monitoring Real-time Pencapaian Ide Karyawan & Implementasi</p>
+            <h1 style="margin:0; font-size: 1.8rem;">🚀 Dashboard Executive Sumbang Saran</h1>
+            <p style="margin:4px 0 0 0; color: #94a3b8; font-size: 0.9rem;">Monitoring Real-time Pencapaian Ide Karyawan & Implementasi</p>
         </div>
     """, unsafe_allow_html=True)
 with head_col2:
-    st.write("")
     st.write("")
     if st.button("🔄 Refresh Data Real-Time", use_container_width=True):
         st.cache_data.clear()
@@ -203,8 +149,7 @@ if raw_data_rows:
     for idx, row in enumerate(raw_data_rows):
         row_str = [str(val).lower().strip() for val in row]
         if any('nama' in item for item in row_str) and any(re.search(r'(dept|department|departement|bagian)', item) for item in row_str):
-            header_idx = idx
-            break
+            header_idx = idx; break
 
     headers = [str(h).strip() for h in raw_data_rows[header_idx]]
     for i in range(header_idx + 1, len(raw_data_rows)):
@@ -270,14 +215,13 @@ filter_dept = st.sidebar.selectbox("Departemen", ["ALL"] + list(dict(sorted(opt_
 filter_line = st.sidebar.selectbox("Line / Section", ["ALL"] + list(dict(sorted(opt_lines.items())).keys()), format_func=lambda x: "Semua Line/Section" if x == "ALL" else opt_lines[x])
 filter_status = st.sidebar.selectbox("Status Ide", ["ALL"] + list(dict(sorted(opt_statuses.items())).keys()), format_func=lambda x: "Semua Status" if x == "ALL" else opt_statuses[x])
 
-# Apply Filter
 df_clean = [row for row in df_raw if 
     (filter_dept == 'ALL' or not col_dept or is_flexible_match(filter_dept, clean_str(row.get(col_dept, '')))) and
     (filter_line == 'ALL' or is_flexible_match(filter_line, clean_str(row.get('__COL_AL_LINE__', '')))) and
     (filter_status == 'ALL' or not col_status or is_flexible_match(filter_status, clean_str(row.get(col_status, ''))))
 ]
 
-# ----------------- EXECUTIVE KPI CARDS -----------------
+# ----------------- KPI METRICS -----------------
 total_all = len(df_clean)
 cnt_close, cnt_open, cnt_notreg = 0, 0, 0
 if col_status:
@@ -288,6 +232,18 @@ if col_status:
         elif 'NOT' in val: cnt_notreg += 1
 
 rate_close = (cnt_close / total_all * 100) if total_all > 0 else 0
+
+# ----------------- EXECUTIVE SUMMARY NARATIF -----------------
+st.markdown(f"""
+    <div class="executive-box">
+        <b style="color: #0f172a; font-size: 1.05rem;">📌 Executive Summary & Operational Health</b>
+        <div style="color: #475569; font-size: 0.9rem; margin-top: 6px;">
+            • Total <b>{total_all:,} ide</b> terkumpul dalam sistem.<br>
+            • Tingkat penyelesaian ide hingga tahap akhir (Status Close) mencapai <b>{rate_close:.1f}%</b> ({cnt_close} ide selesai).<br>
+            • Terdapat <b>{cnt_open} ide berkategori Open</b> dan <b>{cnt_notreg} berkategori Not Registered</b> yang membutuhkan follow-up dari Supervisor/Manager area.
+        </div>
+    </div>
+""", unsafe_allow_html=True)
 
 kpi1, kpi2, kpi3, kpi4 = st.columns(4)
 kpi1.markdown(f"""
@@ -318,61 +274,52 @@ kpi4.markdown(f"""
     <div class="metric-card notreg">
         <div class="metric-title" style="color: #ef4444;">⚠️ Not Registered</div>
         <div class="metric-value">{cnt_notreg:,}</div>
-        <div class="metric-sub">Perlu penanganan</div>
+        <div class="metric-sub">Perlu tindakan</div>
     </div>
 """, unsafe_allow_html=True)
 
 st.write("")
 
-# Tambahkan bagian ini di bawah KPI Cards yang sudah ada
-
-st.write("")
-st.subheader("💡 Highlight & Distribusi Kualitas Ide")
-
-col_lead, col_pie = st.columns([1, 1])
+# ----------------- MODUL TAMBAHAN: LEADERBOARD & DISTRIBUSI -----------------
+col_lead, col_pie, col_bot = st.columns([1, 1, 1])
 
 with col_lead:
     st.markdown('<div class="chart-card">', unsafe_allow_html=True)
-    st.markdown("<b>🏆 Top 5 Contributor (Sumbang Saran Terbanyak)</b>", unsafe_allow_html=True)
-    
-    # Hitung ranking pembuat ide terbanyak
+    st.markdown("<b>🏆 Top 5 Contributor</b>", unsafe_allow_html=True)
     col_nama = next((c for c in headers if 'nama' in c.lower()), None)
-    if col_nama:
-        df_leaderboard = (
-            pd.DataFrame(df_clean)[col_nama]
-            .value_counts()
-            .reset_index()
-            .head(5)
-        )
-        df_leaderboard.columns = ["Nama Karyawan", "Jumlah Ide"]
-        st.dataframe(df_leaderboard, use_container_width=True, hide_index=True)
+    if col_nama and df_clean:
+        df_lb = pd.DataFrame(df_clean)[col_nama].value_counts().reset_index().head(5)
+        df_lb.columns = ["Nama Karyawan", "Jumlah Ide"]
+        st.dataframe(df_lb, use_container_width=True, hide_index=True)
     else:
-        st.info("Kolom 'Nama' tidak ditemukan di dataset untuk menghitung Leaderboard.")
+        st.info("Data kontributor tidak tersedia.")
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col_pie:
     st.markdown('<div class="chart-card">', unsafe_allow_html=True)
-    # Donut Chart untuk Komposisi Status Ide
-    if col_status:
-        df_status_count = pd.DataFrame(df_clean)[col_status].value_counts().reset_index()
-        df_status_count.columns = ["Status", "Jumlah"]
-        
-        fig_pie = px.pie(
-            df_status_count, 
-            names="Status", 
-            values="Jumlah", 
-            hole=0.5,
-            color_discrete_sequence=px.colors.qualitative.Pastel
-        )
-        fig_pie.update_layout(
-            title="<b>Komposisi Proporsi Status Ide</b>",
-            margin=dict(l=20, r=20, t=40, b=20),
-            height=260
-        )
+    if col_status and df_clean:
+        df_st = pd.DataFrame(df_clean)[col_status].value_counts().reset_index()
+        df_st.columns = ["Status", "Jumlah"]
+        fig_pie = px.pie(df_st, names="Status", values="Jumlah", hole=0.55, color_discrete_sequence=px.colors.qualitative.Bold)
+        fig_pie.update_layout(title="<b>Proporsi Status Ide</b>", margin=dict(l=10, r=10, t=35, b=10), height=200)
         st.plotly_chart(fig_pie, use_container_width=True)
+    else:
+        st.info("Data status tidak tersedia.")
     st.markdown('</div>', unsafe_allow_html=True)
 
-# ----------------- TARGET & ACTUAL DATA PROCESSING -----------------
+with col_bot:
+    st.markdown('<div class="chart-card">', unsafe_allow_html=True)
+    st.markdown("<b>⚠️ Top Bottleneck Area (Ide Tertahan)</b>", unsafe_allow_html=True)
+    df_open_only = [r for r in df_clean if clean_str(r.get(col_status, '')) == 'OPEN']
+    if df_open_only:
+        df_bot = pd.DataFrame(df_open_only)['__COL_AL_LINE__'].value_counts().reset_index().head(5)
+        df_bot.columns = ["Line / Section", "Pending (Open)"]
+        st.dataframe(df_bot, use_container_width=True, hide_index=True)
+    else:
+        st.success("Tidak ada ide terpending pada area ini.")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+# ----------------- PROCESSING TARGET & DATA GRAFIK -----------------
 months_display = ["September", "October", "November", "December", "January", "February", "March", "April", "May", "June", "July", "August"]
 sum_m1, sum_m2, sum_m3 = 0.0, 0.0, 0.0
 
@@ -393,7 +340,6 @@ for inc in monthly_increments:
     target_p1.append(int(round(running_target)))
 
 target_p5 = [0]*2 + target_p1[:-2]
-
 act_p1, act_p5 = [0]*12, [0]*12
 month_map = {9:0, 10:1, 11:2, 12:3, 1:4, 2:5, 3:6, 4:7, 5:8, 6:9, 7:10, 8:11}
 
@@ -409,31 +355,19 @@ for row in df_clean:
         act_p1[idx] += 1
         if st_val == 'CLOSE': act_p5[idx] += 1
 
-# ----------------- VISUAL CHARTS LAYOUT & KESIMPULAN -----------------
-
-# Pastikan baris ini ada SEBELUM masuk ke with tab_overview!
+# ----------------- TABS SETUP & VISUALISASI -----------------
 tab_overview, tab_details = st.tabs(["📊 Analisis Visual & Tren", "📋 Ringkasan & Arahan Tindak Lanjut"])
 
-# Baru jalankan blok with tab_overview
 with tab_overview:
-    # ----------------- ROW 1 -----------------
     c1, c2 = st.columns(2)
-    
     with c1:
         st.markdown('<div class="chart-card">', unsafe_allow_html=True)
         st.plotly_chart(make_styled_combo_chart(months_display, target_p1, act_p1, "1. Total Ide Terdaftar (Target Akumulatif vs Aktual)"), use_container_width=True)
-        
-        # Kesimpulan Grafik 1
         tot_act_p1 = sum(act_p1)
         tot_tgt_p1 = target_p1[-1] if target_p1 else 0
         gap_p1 = tot_act_p1 - tot_tgt_p1
         p1_status = "menembus target" if gap_p1 >= 0 else f"kurang {abs(gap_p1)} ide dari target"
-        
-        st.info(f"""
-        📌 **Analisis Grafik 1:**
-        * **Total Terdaftar:** **{tot_act_p1} ide** dari target akhir tahun **{tot_tgt_p1} ide**.
-        * **Status:** Akumulasi ide terdaftar saat ini **{p1_status}**.
-        """)
+        st.info(f"📌 **Analisis Grafik 1:** Total terdaftar **{tot_act_p1} ide** dari target akhir tahun **{tot_tgt_p1} ide**. Status saat ini **{p1_status}**.")
         st.markdown('</div>', unsafe_allow_html=True)
 
     with c2:
@@ -448,22 +382,11 @@ with tab_overview:
         
         st.markdown('<div class="chart-card">', unsafe_allow_html=True)
         st.plotly_chart(make_styled_combo_chart(steps, target_p2, act_p2, "2. Target vs Aktual per Tahapan SS"), use_container_width=True)
-        
-        # Kesimpulan Grafik 2
         max_step_idx = int(np.argmax(act_p2)) if max(act_p2) > 0 else 0
-        steng_step = steps[max_step_idx]
-        steng_val = act_p2[max_step_idx]
-        
-        st.info(f"""
-        📌 **Analisis Grafik 2:**
-        * **Penumpukan Berkas:** Konsentrasi ide terbanyak saat ini ada pada tahap **{steng_step}** ({steng_val} ide).
-        * **Catatan:** Perlu akselerasi proses agar ide tidak tertahan di tahap awal dan bisa segera diimplementasikan.
-        """)
+        st.info(f"📌 **Analisis Grafik 2:** Konsentrasi ide terbanyak tertahan pada tahap **{steps[max_step_idx]}** ({act_p2[max_step_idx]} ide).")
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # ----------------- ROW 2 -----------------
     c3, c4 = st.columns(2)
-    
     with c3:
         dept_targets, dept_actuals = {}, {}
         for t in line_targets_3m:
@@ -480,16 +403,8 @@ with tab_overview:
         
         st.markdown('<div class="chart-card">', unsafe_allow_html=True)
         st.plotly_chart(make_styled_combo_chart(list(dept_targets.keys()), list(dept_targets.values()), list(dept_actuals.values()), "3. Target vs Aktual per Departemen (1 Tahun)"), use_container_width=True)
-        
-        # Kesimpulan Grafik 3
         best_dept = max(dept_actuals, key=dept_actuals.get) if dept_actuals else "-"
-        best_dept_val = dept_actuals.get(best_dept, 0)
-        
-        st.info(f"""
-        📌 **Analisis Grafik 3:**
-        * **Kontributor Tertinggi:** Departemen **{best_dept}** memimpin pengajuan ide terbanyak (**{best_dept_val} ide**).
-        * **Evaluasi:** Dorong departemen lain yang kontribusinya masih jauh dari target tahunan.
-        """)
+        st.info(f"📌 **Analisis Grafik 3:** Kontributor terbanyak berasal dari Departemen **{best_dept}** ({dept_actuals.get(best_dept, 0)} ide).")
         st.markdown('</div>', unsafe_allow_html=True)
 
     with c4:
@@ -515,35 +430,16 @@ with tab_overview:
 
         st.markdown('<div class="chart-card">', unsafe_allow_html=True)
         st.plotly_chart(make_styled_combo_chart(lines, target_p4, act_p4, "4. Target vs Aktual per Line / Section (1 Tahun)"), use_container_width=True)
-        
-        # Kesimpulan Grafik 4
         achieved_lines = sum(1 for a, t in zip(act_p4, target_p4) if a >= t and t > 0)
-        tot_lines = len(lines)
-        
-        st.info(f"""
-        📌 **Analisis Grafik 4:**
-        * **Pencapaian Area:** **{achieved_lines} dari {tot_lines} Line/Section** sudah memenuhi target ide tahunan.
-        * **Area Kritis:** Line yang belum ada kontribusi ide sama sekali perlu mendapat pengawasan langsung dari Supervisor.
-        """)
+        st.info(f"📌 **Analisis Grafik 4:** Sebanyak **{achieved_lines} dari {len(lines)} Line/Section** sudah memenuhi target tahunan.")
         st.markdown('</div>', unsafe_allow_html=True)
 
-    # ----------------- ROW 3 -----------------
     st.markdown('<div class="chart-card">', unsafe_allow_html=True)
     st.plotly_chart(make_styled_combo_chart(months_display, target_p5, act_p5, "5. Target Penyelesaian Aktivitas SS (Status Close)"), use_container_width=True)
-    
-    # Kesimpulan Grafik 5
-    tot_close_act = sum(act_p5)
-    tot_close_tgt = target_p5[-1] if target_p5 else 0
-    close_pct = (tot_close_act / total_all * 100) if total_all > 0 else 0.0
-    
-    st.info(f"""
-    📌 **Analisis Grafik 5 (Status Close):**
-    * **Penyelesaian Akhir:** Sebanyak **{tot_close_act} ide** telah berstatus **CLOSE** dari total **{total_all} ide** masuk ({close_pct:.1f}% penyelesaian).
-    * **Target Eksekusi:** Diperlukan penyelesaian hingga tahap implementasi agar ide yang diajukan tidak hanya berhenti pada tahap pendaftaran.
-    """)
+    st.info(f"📌 **Analisis Grafik 5:** Sebanyak **{sum(act_p5)} ide** telah berstatus CLOSE ({rate_close:.1f}% tingkat penyelesaian).")
     st.markdown('</div>', unsafe_allow_html=True)
 
-# ----------------- TABEL & ARAHAN EXECUTIVE (TAB 2) -----------------
+# ----------------- TAB 2: TABEL DETIL BULANAN -----------------
 with tab_details:
     st.subheader("🎯 Ringkasan Pencapaian Bulanan & Action Plan")
     
@@ -551,73 +447,40 @@ with tab_details:
     for idx, l_name in enumerate(lines):
         actual_val = act_p4[idx] if idx < len(act_p4) else 0
         target_yearly = target_p4[idx] if idx < len(target_p4) else 0
-        
-        # Perhitungan Target Bulanan (Target Tahunan dibagi 12 bulan)
         target_monthly = int(round(target_yearly / 12)) if target_yearly > 0 else 0
-        
-        # Hitung Persentase Pencapaian Terhadap Target Bulanan
         achieve_monthly_pct = (actual_val / target_monthly * 100) if target_monthly > 0 else (100.0 if actual_val > 0 else 0.0)
         
-        # Logika Status & Rekomendasi berdasarkan Target Bulanan
         if target_monthly == 0:
-            if actual_val > 0:
-                status_tag = "🟢 Melampaui Target"
-                arahan = "Sangat baik, terdapat kontribusi ide meskipun tidak ada target spesifik."
-            else:
-                status_tag = "⚪ Tanpa Target"
-                arahan = "Belum ada alokasi target bulanan untuk area ini."
+            status_tag = "🟢 Melampaui Target" if actual_val > 0 else "⚪ Tanpa Target"
+            arahan = "Kontribusi ide sangat baik." if actual_val > 0 else "Belum ada alokasi target bulanan."
         elif actual_val == 0:
             status_tag = "🔴 Belum Ada Ide"
-            arahan = f"Target bulanan ({target_monthly} ide) belum terpenuhi. Perlu sosialisasi dari Supervisor."
+            arahan = f"Target bulanan ({target_monthly} ide) belum terpenuhi. Perlu koordinasi Supervisor."
         elif actual_val < target_monthly:
             gap_m = target_monthly - actual_val
             status_tag = "🟡 Kurang Target"
-            arahan = f"Kurang {gap_m} ide untuk memenuhi target bulan ini ({target_monthly} ide)."
+            arahan = f"Kurang {gap_m} ide untuk memenuhi target bulan ini."
         else:
             status_tag = "🟢 Target Bulanan Tercapai"
-            arahan = "Target bulanan terpenuhi. Pertahankan ritme pengajuan ide."
+            arahan = "Target bulanan terpenuhi. Pertahankan ritme tim."
 
         table_data.append({
             "Line / Section": l_name,
             "Target Bulanan": target_monthly,
             "Aktual": actual_val,
-            "Pencapaian Bulanan (%)": min(achieve_monthly_pct, 100.0), # Di-cap ke 100% untuk progress bar
+            "Pencapaian Bulanan (%)": min(achieve_monthly_pct, 100.0),
             "Status": status_tag,
             "Rekomendasi Tindak Lanjut": arahan
         })
 
     df_summary = pd.DataFrame(table_data)
-    
-    # Render Tabel Interaktif Streamlit
     st.dataframe(
         df_summary,
         use_container_width=True,
         hide_index=True,
         column_config={
-            "Target Bulanan": st.column_config.NumberColumn(
-                "Target Bulanan",
-                help="Target ide bulanan (Target Tahunan / 12)",
-                format="%d"
-            ),
-            "Aktual": st.column_config.NumberColumn(
-                "Aktual Ide",
-                help="Jumlah ide yang masuk saat ini",
-                format="%d"
-            ),
             "Pencapaian Bulanan (%)": st.column_config.ProgressColumn(
-                "Progress Pencapaian",
-                help="Persentase ketercapaian terhadap target bulanan",
-                format="%.1f%%",
-                min_value=0,
-                max_value=100,
-            ),
-            "Status": st.column_config.TextColumn(
-                "Status",
-                help="Indikator ketercapaian target bulanan"
-            ),
-            "Rekomendasi Tindak Lanjut": st.column_config.TextColumn(
-                "Rekomendasi Tindak Lanjut",
-                width="large"
+                "Progress Pencapaian", format="%.1f%%", min_value=0, max_value=100
             )
         }
     )
