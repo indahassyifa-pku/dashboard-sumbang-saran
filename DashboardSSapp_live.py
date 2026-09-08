@@ -8,58 +8,132 @@ import plotly.express as px
 
 # ----------------- CONFIGURASI HALAMAN -----------------
 st.set_page_config(
-    page_title="Dashboard Executif - Sumbang Saran",
-    page_icon="📈",
+    page_title="Executive Dashboard - Sumbang Saran",
+    page_icon="⚡",
     layout="wide",
     initial_sidebar_state="expanded"
 )
 
-# Custom Styling CSS (Modern Glassmorphism & Visual Aesthetics)
+# Custom Styling CSS (Modern Glassmorphism, Micro-Interactions, Adaptif Dark/Light Mode)
 st.markdown("""
     <style>
-    .main { background-color: #f8fafc; }
-    
-    .header-container {
-        background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-        padding: 24px;
-        border-radius: 16px;
-        color: white;
-        margin-bottom: 20px;
-        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    /* Google Fonts Import */
+    @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+
+    html, body, [class*="css"] {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    /* Gradient Hero Banner */
+    .hero-container {
+        background: linear-gradient(135deg, #1e1b4b 0%, #312e81 50%, #4338ca 100%);
+        padding: 28px 32px;
+        border-radius: 20px;
+        color: #ffffff;
+        margin-bottom: 24px;
+        box-shadow: 0 20px 25px -5px rgba(49, 46, 129, 0.25);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        position: relative;
+        overflow: hidden;
     }
     
+    .hero-title {
+        font-size: 2rem !important;
+        font-weight: 800 !important;
+        letter-spacing: -0.025em;
+        color: #ffffff !important;
+        margin: 0 !important;
+    }
+
+    .hero-subtitle {
+        font-size: 0.95rem;
+        color: #c7d2fe;
+        margin-top: 6px;
+        font-weight: 400;
+    }
+
+    /* Executive Executive Box */
     .executive-box {
-        background: #ffffff;
-        border-left: 5px solid #2563eb;
-        border-radius: 12px;
-        padding: 16px 20px;
-        margin-bottom: 20px;
-        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
-    }
-
-    .metric-card {
-        background-color: #ffffff;
-        border-radius: 14px;
-        padding: 18px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        border-left: 6px solid #2563eb;
-        transition: transform 0.2s ease;
-    }
-    .metric-card:hover { transform: translateY(-2px); }
-    .metric-card.close { border-left-color: #10b981; }
-    .metric-card.open { border-left-color: #f59e0b; }
-    .metric-card.notreg { border-left-color: #ef4444; }
-    
-    .metric-title { font-size: 0.8rem; font-weight: 700; text-transform: uppercase; color: #64748b; }
-    .metric-value { font-size: 1.8rem; font-weight: 800; color: #0f172a; margin-top: 6px; }
-    .metric-sub { font-size: 0.8rem; color: #94a3b8; margin-top: 4px; }
-
-    .chart-card {
-        background: #ffffff;
+        background: var(--background-secondary-color, rgba(255, 255, 255, 0.03));
+        border-left: 6px solid #6366f1;
         border-radius: 16px;
-        padding: 18px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-        margin-bottom: 20px;
+        padding: 20px 24px;
+        margin-bottom: 24px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        border-top: 1px solid rgba(128, 128, 128, 0.1);
+        border-right: 1px solid rgba(128, 128, 128, 0.1);
+        border-bottom: 1px solid rgba(128, 128, 128, 0.1);
+    }
+
+    /* Metric Cards Modern Styling */
+    .metric-card {
+        background: var(--background-secondary-color, rgba(255, 255, 255, 0.03));
+        border-radius: 18px;
+        padding: 22px;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(128, 128, 128, 0.15);
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .metric-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Card Glow Lines Top */
+    .metric-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 4px;
+        background: linear-gradient(90deg, #6366f1, #818cf8);
+    }
+    .metric-card.close::before { background: linear-gradient(90deg, #10b981, #34d399); }
+    .metric-card.open::before { background: linear-gradient(90deg, #f59e0b, #fbbf24); }
+    .metric-card.notreg::before { background: linear-gradient(90deg, #ef4444, #f87171); }
+
+    .metric-title {
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        opacity: 0.7;
+    }
+    .metric-value {
+        font-size: 2.1rem;
+        font-weight: 800;
+        margin-top: 8px;
+        letter-spacing: -0.02em;
+    }
+    .metric-sub {
+        font-size: 0.8rem;
+        margin-top: 6px;
+        opacity: 0.7;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    /* Chart Container Modern */
+    .chart-card {
+        background: var(--background-secondary-color, rgba(255, 255, 255, 0.03));
+        border-radius: 20px;
+        padding: 22px;
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+        border: 1px solid rgba(128, 128, 128, 0.12);
+        margin-bottom: 24px;
+    }
+
+    /* Custom Title Inside Cards */
+    .card-header-title {
+        font-size: 1rem;
+        font-weight: 700;
+        margin-bottom: 14px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -103,38 +177,53 @@ def load_csv_generic(url):
         st.error(f"Gagal mengunduh data dari URL: {e}")
         return []
 
+# Dynamic Modern Plotly Chart Styling
 def make_styled_combo_chart(categories, target_vals, actual_vals, title):
     fig = go.Figure()
+    
+    # Modern Gradient Bar
     fig.add_trace(go.Bar(
         x=categories, y=actual_vals, name='Aktual', 
-        marker_color='#3b82f6', opacity=0.85, text=actual_vals, textposition='auto'
+        marker=dict(
+            color='#6366f1',
+            line=dict(color='#4f46e5', width=1)
+        ), 
+        opacity=0.9, 
+        text=actual_vals, textposition='auto'
     ))
+    
+    # Glowing Line Target
     fig.add_trace(go.Scatter(
         x=categories, y=target_vals, name='Target', mode='lines+markers+text',
-        line=dict(color='#0f172a', width=3), marker=dict(size=7, color='#0f172a'),
+        line=dict(color='#f59e0b', width=3, shape='spline'), 
+        marker=dict(size=8, color='#fbbf24', line=dict(color='#d97706', width=2)),
         text=target_vals, textposition='top center'
     ))
+    
     fig.update_layout(
-        title=dict(text=f"<b>{title}</b>", font=dict(size=14, color='#0f172a')),
-        margin=dict(l=20, r=20, t=40, b=20), height=320,
-        paper_bgcolor='rgba(0,0,0,0)', plot_bgcolor='rgba(0,0,0,0)',
+        title=dict(text=f"<b>{title}</b>", font=dict(size=14, family='Plus Jakarta Sans')),
+        margin=dict(l=15, r=15, t=45, b=15), 
+        height=330,
+        paper_bgcolor='rgba(0,0,0,0)', 
+        plot_bgcolor='rgba(0,0,0,0)',
         legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
-        xaxis=dict(showgrid=False), yaxis=dict(showgrid=True, gridcolor='#f1f5f9')
+        xaxis=dict(showgrid=False), 
+        yaxis=dict(showgrid=True, gridcolor='rgba(128, 128, 128, 0.15)')
     )
     return fig
 
-# ----------------- HEADER SECTION -----------------
-head_col1, head_col2 = st.columns([3, 1])
+# ----------------- HEADER HERO BANNER -----------------
+head_col1, head_col2 = st.columns([3.5, 1])
 with head_col1:
     st.markdown("""
-        <div class="header-container">
-            <h1 style="margin:0; font-size: 1.8rem;">🚀 Dashboard Executive Sumbang Saran</h1>
-            <p style="margin:4px 0 0 0; color: #94a3b8; font-size: 0.9rem;">Monitoring Real-time Pencapaian Ide Karyawan & Implementasi</p>
+        <div class="hero-container">
+            <h1 class="hero-title">⚡ Executive Dashboard Sumbang Saran</h1>
+            <div class="hero-subtitle">Real-time Performance Metrics & Operational Improvement Analytics</div>
         </div>
     """, unsafe_allow_html=True)
 with head_col2:
     st.write("")
-    if st.button("🔄 Refresh Data Real-Time", use_container_width=True):
+    if st.button("🔄 Sync Real-Time Data", use_container_width=True):
         st.cache_data.clear()
 
 # ----------------- DATA LOADING & PARSING -----------------
@@ -201,7 +290,7 @@ if raw_target_rows:
             })
 
 # ----------------- SIDEBAR FILTERS -----------------
-st.sidebar.header("🔍 Filter Dashboard")
+st.sidebar.markdown("### 🎛️ Filter Parameters")
 opt_depts, opt_lines, opt_statuses = {}, {}, {}
 for t in line_targets_3m:
     if t['dept']: opt_depts[t['clean_dept']] = t['dept']
@@ -236,21 +325,25 @@ rate_close = (cnt_close / total_all * 100) if total_all > 0 else 0
 # ----------------- EXECUTIVE SUMMARY NARATIF -----------------
 st.markdown(f"""
     <div class="executive-box">
-        <b style="color: #0f172a; font-size: 1.05rem;">📌 Executive Summary & Operational Health</b>
-        <div style="color: #475569; font-size: 0.9rem; margin-top: 6px;">
-            • Total <b>{total_all:,} ide</b> terkumpul dalam sistem.<br>
-            • Tingkat penyelesaian ide hingga tahap akhir (Status Close) mencapai <b>{rate_close:.1f}%</b> ({cnt_close} ide selesai).<br>
-            • Terdapat <b>{cnt_open} ide berkategori Open</b> dan <b>{cnt_notreg} berkategori Not Registered</b> yang membutuhkan follow-up dari Supervisor/Manager area.
+        <div style="font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+            📌 Executive Health Summary
+        </div>
+        <div style="font-size: 0.92rem; margin-top: 8px; opacity: 0.9; line-height: 1.6;">
+            • Total <b>{total_all:,} usulan ide</b> telah berhasil dihimpun dari seluruh divisi.<br>
+            • Tingkat eksekusi selesai (*Completion Rate*) berada di angka <b>{rate_close:.1f}%</b> dengan total <b>{cnt_close} ide terimplementasi</b>.<br>
+            • Diperlukan eskalasi pada <b>{cnt_open} ide berstatus Open</b> dan <b>{cnt_notreg} ide Not Registered</b> untuk mempercepat efisiensi operasional.
         </div>
     </div>
 """, unsafe_allow_html=True)
 
+# KPI Cards Line Up
 kpi1, kpi2, kpi3, kpi4 = st.columns(4)
+
 kpi1.markdown(f"""
     <div class="metric-card">
         <div class="metric-title">💡 Total Ide Masuk</div>
         <div class="metric-value">{total_all:,}</div>
-        <div class="metric-sub">Usulan terdaftar</div>
+        <div class="metric-sub">Usulan Terdaftar</div>
     </div>
 """, unsafe_allow_html=True)
 
@@ -266,7 +359,7 @@ kpi3.markdown(f"""
     <div class="metric-card open">
         <div class="metric-title" style="color: #f59e0b;">⏳ Status Open</div>
         <div class="metric-value">{cnt_open:,}</div>
-        <div class="metric-sub">Dalam proses</div>
+        <div class="metric-sub">Dalam Review/Proses</div>
     </div>
 """, unsafe_allow_html=True)
 
@@ -274,18 +367,18 @@ kpi4.markdown(f"""
     <div class="metric-card notreg">
         <div class="metric-title" style="color: #ef4444;">⚠️ Not Registered</div>
         <div class="metric-value">{cnt_notreg:,}</div>
-        <div class="metric-sub">Perlu tindakan</div>
+        <div class="metric-sub">Perlu Follow-up</div>
     </div>
 """, unsafe_allow_html=True)
 
 st.write("")
 
-# ----------------- MODUL TAMBAHAN: LEADERBOARD & DISTRIBUSI -----------------
-col_lead, col_pie, col_bot = st.columns([1, 1, 1])
+# ----------------- MODUL LEADERBOARD & BOTTLENECK -----------------
+col_lead, col_pie, col_bot = st.columns([1.1, 1, 1.1])
 
 with col_lead:
     st.markdown('<div class="chart-card">', unsafe_allow_html=True)
-    st.markdown("<b>🏆 Top 5 Contributor</b>", unsafe_allow_html=True)
+    st.markdown('<div class="card-header-title">🏆 Top 5 Contributor Karyawan</div>', unsafe_allow_html=True)
     col_nama = next((c for c in headers if 'nama' in c.lower()), None)
     if col_nama and df_clean:
         df_lb = pd.DataFrame(df_clean)[col_nama].value_counts().reset_index().head(5)
@@ -300,8 +393,17 @@ with col_pie:
     if col_status and df_clean:
         df_st = pd.DataFrame(df_clean)[col_status].value_counts().reset_index()
         df_st.columns = ["Status", "Jumlah"]
-        fig_pie = px.pie(df_st, names="Status", values="Jumlah", hole=0.55, color_discrete_sequence=px.colors.qualitative.Bold)
-        fig_pie.update_layout(title="<b>Proporsi Status Ide</b>", margin=dict(l=10, r=10, t=35, b=10), height=200)
+        fig_pie = px.pie(
+            df_st, names="Status", values="Jumlah", hole=0.6,
+            color_discrete_sequence=['#10b981', '#f59e0b', '#ef4444', '#6366f1']
+        )
+        fig_pie.update_layout(
+            title="<b>Proporsi Status</b>", 
+            margin=dict(l=10, r=10, t=35, b=10), 
+            height=205,
+            paper_bgcolor='rgba(0,0,0,0)', 
+            plot_bgcolor='rgba(0,0,0,0)'
+        )
         st.plotly_chart(fig_pie, use_container_width=True)
     else:
         st.info("Data status tidak tersedia.")
@@ -309,11 +411,11 @@ with col_pie:
 
 with col_bot:
     st.markdown('<div class="chart-card">', unsafe_allow_html=True)
-    st.markdown("<b>⚠️ Top Bottleneck Area (Ide Tertahan)</b>", unsafe_allow_html=True)
+    st.markdown('<div class="card-header-title">⚠️ Bottleneck Area (Ide Open)</div>', unsafe_allow_html=True)
     df_open_only = [r for r in df_clean if clean_str(r.get(col_status, '')) == 'OPEN']
     if df_open_only:
         df_bot = pd.DataFrame(df_open_only)['__COL_AL_LINE__'].value_counts().reset_index().head(5)
-        df_bot.columns = ["Line / Section", "Pending (Open)"]
+        df_bot.columns = ["Line / Section", "Pending"]
         st.dataframe(df_bot, use_container_width=True, hide_index=True)
     else:
         st.success("Tidak ada ide terpending pada area ini.")
@@ -356,18 +458,18 @@ for row in df_clean:
         if st_val == 'CLOSE': act_p5[idx] += 1
 
 # ----------------- TABS SETUP & VISUALISASI -----------------
-tab_overview, tab_details = st.tabs(["📊 Analisis Visual & Tren", "📋 Ringkasan & Arahan Tindak Lanjut"])
+tab_overview, tab_details = st.tabs(["📈 Dynamic Visual Analytics", "📋 Detailed Performance Breakdown"])
 
 with tab_overview:
     c1, c2 = st.columns(2)
     with c1:
         st.markdown('<div class="chart-card">', unsafe_allow_html=True)
-        st.plotly_chart(make_styled_combo_chart(months_display, target_p1, act_p1, "1. Total Ide Terdaftar (Target Akumulatif vs Aktual)"), use_container_width=True)
+        st.plotly_chart(make_styled_combo_chart(months_display, target_p1, act_p1, "1. Akumulasi Total Ide Terdaftar vs Target"), use_container_width=True)
         tot_act_p1 = sum(act_p1)
         tot_tgt_p1 = target_p1[-1] if target_p1 else 0
         gap_p1 = tot_act_p1 - tot_tgt_p1
-        p1_status = "menembus target" if gap_p1 >= 0 else f"kurang {abs(gap_p1)} ide dari target"
-        st.info(f"📌 **Analisis Grafik 1:** Total terdaftar **{tot_act_p1} ide** dari target akhir tahun **{tot_tgt_p1} ide**. Status saat ini **{p1_status}**.")
+        p1_status = "melampaui target" if gap_p1 >= 0 else f"kurang {abs(gap_p1)} ide"
+        st.info(f"📌 **Insight:** Total terdaftar **{tot_act_p1} ide** dari target tahunan **{tot_tgt_p1} ide** ({p1_status}).")
         st.markdown('</div>', unsafe_allow_html=True)
 
     with c2:
@@ -381,9 +483,9 @@ with tab_overview:
                     if s_name[:5].lower() in t_val: act_p2[s_idx] += 1
         
         st.markdown('<div class="chart-card">', unsafe_allow_html=True)
-        st.plotly_chart(make_styled_combo_chart(steps, target_p2, act_p2, "2. Target vs Aktual per Tahapan SS"), use_container_width=True)
+        st.plotly_chart(make_styled_combo_chart(steps, target_p2, act_p2, "2. Sebaran Ide per Tahapan Workflow SS"), use_container_width=True)
         max_step_idx = int(np.argmax(act_p2)) if max(act_p2) > 0 else 0
-        st.info(f"📌 **Analisis Grafik 2:** Konsentrasi ide terbanyak tertahan pada tahap **{steps[max_step_idx]}** ({act_p2[max_step_idx]} ide).")
+        st.info(f"📌 **Insight:** Konsentrasi ide terbanyak saat ini berada pada tahap **{steps[max_step_idx]}** ({act_p2[max_step_idx]} ide).")
         st.markdown('</div>', unsafe_allow_html=True)
 
     c3, c4 = st.columns(2)
@@ -402,9 +504,9 @@ with tab_overview:
                         dept_actuals[d_label] += 1; break
         
         st.markdown('<div class="chart-card">', unsafe_allow_html=True)
-        st.plotly_chart(make_styled_combo_chart(list(dept_targets.keys()), list(dept_targets.values()), list(dept_actuals.values()), "3. Target vs Aktual per Departemen (1 Tahun)"), use_container_width=True)
+        st.plotly_chart(make_styled_combo_chart(list(dept_targets.keys()), list(dept_targets.values()), list(dept_actuals.values()), "3. Perbandingan Target vs Aktual per Departemen"), use_container_width=True)
         best_dept = max(dept_actuals, key=dept_actuals.get) if dept_actuals else "-"
-        st.info(f"📌 **Analisis Grafik 3:** Kontributor terbanyak berasal dari Departemen **{best_dept}** ({dept_actuals.get(best_dept, 0)} ide).")
+        st.info(f"📌 **Insight:** Kontributor terbanyak diraih oleh **Departemen {best_dept}** ({dept_actuals.get(best_dept, 0)} ide).")
         st.markdown('</div>', unsafe_allow_html=True)
 
     with c4:
@@ -429,19 +531,19 @@ with tab_overview:
                 lines.append(grp['name']); target_p4.append(grp['target']); act_p4.append(grp['actual'])
 
         st.markdown('<div class="chart-card">', unsafe_allow_html=True)
-        st.plotly_chart(make_styled_combo_chart(lines, target_p4, act_p4, "4. Target vs Aktual per Line / Section (1 Tahun)"), use_container_width=True)
+        st.plotly_chart(make_styled_combo_chart(lines, target_p4, act_p4, "4. Pencapaian Target per Line / Section"), use_container_width=True)
         achieved_lines = sum(1 for a, t in zip(act_p4, target_p4) if a >= t and t > 0)
-        st.info(f"📌 **Analisis Grafik 4:** Sebanyak **{achieved_lines} dari {len(lines)} Line/Section** sudah memenuhi target tahunan.")
+        st.info(f"📌 **Insight:** **{achieved_lines} dari {len(lines)} Line/Section** telah sukses mencapai/melampaui target.")
         st.markdown('</div>', unsafe_allow_html=True)
 
     st.markdown('<div class="chart-card">', unsafe_allow_html=True)
-    st.plotly_chart(make_styled_combo_chart(months_display, target_p5, act_p5, "5. Target Penyelesaian Aktivitas SS (Status Close)"), use_container_width=True)
-    st.info(f"📌 **Analisis Grafik 5:** Sebanyak **{sum(act_p5)} ide** telah berstatus CLOSE ({rate_close:.1f}% tingkat penyelesaian).")
+    st.plotly_chart(make_styled_combo_chart(months_display, target_p5, act_p5, "5. Akumulasi Ide Berstatus CLOSE (Selesai Implementasi)"), use_container_width=True)
+    st.info(f"📌 **Insight:** Total **{sum(act_p5)} ide** telah sepenuhnya selesai diimplementasikan (*Status Close*).")
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ----------------- TAB 2: TABEL DETIL BULANAN -----------------
 with tab_details:
-    st.subheader("🎯 Ringkasan Pencapaian Bulanan & Action Plan")
+    st.subheader("🎯 Operational Action Plan & Progress Tracker")
     
     table_data = []
     for idx, l_name in enumerate(lines):
@@ -451,17 +553,17 @@ with tab_details:
         achieve_monthly_pct = (actual_val / target_monthly * 100) if target_monthly > 0 else (100.0 if actual_val > 0 else 0.0)
         
         if target_monthly == 0:
-            status_tag = "🟢 Melampaui Target" if actual_val > 0 else "⚪ Tanpa Target"
+            status_tag = "🟢 On Track" if actual_val > 0 else "⚪ No Target"
             arahan = "Kontribusi ide sangat baik." if actual_val > 0 else "Belum ada alokasi target bulanan."
         elif actual_val == 0:
-            status_tag = "🔴 Belum Ada Ide"
+            status_tag = "🔴 Critical"
             arahan = f"Target bulanan ({target_monthly} ide) belum terpenuhi. Perlu koordinasi Supervisor."
         elif actual_val < target_monthly:
             gap_m = target_monthly - actual_val
-            status_tag = "🟡 Kurang Target"
+            status_tag = "🟡 Warning"
             arahan = f"Kurang {gap_m} ide untuk memenuhi target bulan ini."
         else:
-            status_tag = "🟢 Target Bulanan Tercapai"
+            status_tag = "🟢 Target Achieved"
             arahan = "Target bulanan terpenuhi. Pertahankan ritme tim."
 
         table_data.append({
@@ -470,7 +572,7 @@ with tab_details:
             "Aktual": actual_val,
             "Pencapaian Bulanan (%)": min(achieve_monthly_pct, 100.0),
             "Status": status_tag,
-            "Rekomendasi Tindak Lanjut": arahan
+            "Rekomendasi Action Plan": arahan
         })
 
     df_summary = pd.DataFrame(table_data)
@@ -480,10 +582,10 @@ with tab_details:
         hide_index=True,
         column_config={
             "Pencapaian Bulanan (%)": st.column_config.ProgressColumn(
-                "Progress Pencapaian", format="%.1f%%", min_value=0, max_value=100
+                "Progress Bar", format="%.1f%%", min_value=0, max_value=100
             )
         }
     )
 
-    with st.expander("📂 Preview Mentah Data Google Sheets"):
+    with st.expander("📂 Raw Data Inspection"):
         st.dataframe(pd.DataFrame(df_clean), use_container_width=True)
