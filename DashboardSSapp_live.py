@@ -362,6 +362,11 @@ for row in df_clean:
         if st_val == 'CLOSE': act_p5[idx] += 1
 
 # ----------------- VISUAL CHARTS LAYOUT & KESIMPULAN -----------------
+
+# Pastikan baris ini ada SEBELUM masuk ke with tab_overview!
+tab_overview, tab_details = st.tabs(["📊 Analisis Visual & Tren", "📋 Ringkasan & Arahan Tindak Lanjut"])
+
+# Baru jalankan blok with tab_overview
 with tab_overview:
     # ----------------- ROW 1 -----------------
     c1, c2 = st.columns(2)
