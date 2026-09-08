@@ -324,6 +324,54 @@ kpi4.markdown(f"""
 
 st.write("")
 
+# Tambahkan bagian ini di bawah KPI Cards yang sudah ada
+
+st.write("")
+st.subheader("💡 Highlight & Distribusi Kualitas Ide")
+
+col_lead, col_pie = st.columns([1, 1])
+
+with col_lead:
+    st.markdown('<div class="chart-card">', unsafe_allow_html=True)
+    st.markdown("<b>🏆 Top 5 Contributor (Sumbang Saran Terbanyak)</b>", unsafe_allow_html=True)
+    
+    # Hitung ranking pembuat ide terbanyak
+    col_nama = next((c for c in headers if 'nama' in c.lower()), None)
+    if col_nama:
+        df_leaderboard = (
+            pd.DataFrame(df_clean)[col_nama]
+            .value_counts()
+            .reset_index()
+            .head(5)
+        )
+        df_leaderboard.columns = ["Nama Karyawan", "Jumlah Ide"]
+        st.dataframe(df_leaderboard, use_container_width=True, hide_index=True)
+    else:
+        st.info("Kolom 'Nama' tidak ditemukan di dataset untuk menghitung Leaderboard.")
+    st.markdown('</div>', unsafe_allow_html=True)
+
+with col_pie:
+    st.markdown('<div class="chart-card">', unsafe_allow_html=True)
+    # Donut Chart untuk Komposisi Status Ide
+    if col_status:
+        df_status_count = pd.DataFrame(df_clean)[col_status].value_counts().reset_index()
+        df_status_count.columns = ["Status", "Jumlah"]
+        
+        fig_pie = px.pie(
+            df_status_count, 
+            names="Status", 
+            values="Jumlah", 
+            hole=0.5,
+            color_discrete_sequence=px.colors.qualitative.Pastel
+        )
+        fig_pie.update_layout(
+            title="<b>Komposisi Proporsi Status Ide</b>",
+            margin=dict(l=20, r=20, t=40, b=20),
+            height=260
+        )
+        st.plotly_chart(fig_pie, use_container_width=True)
+    st.markdown('</div>', unsafe_allow_html=True)
+
 # ----------------- TARGET & ACTUAL DATA PROCESSING -----------------
 months_display = ["September", "October", "November", "December", "January", "February", "March", "April", "May", "June", "July", "August"]
 sum_m1, sum_m2, sum_m3 = 0.0, 0.0, 0.0
