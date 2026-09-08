@@ -543,8 +543,9 @@ with tab_overview:
 
 # ----------------- TAB 2: TABEL DETIL BULANAN -----------------
 with tab_details:
-    st.subheader("🎯 Operational Action Plan & Progress Tracker")
+    st.subheader("🎯 Operational Action Plan & Root Cause Analysis")
     
+    # ----------------- SUMMARY TABLE TARGET VS AKTUAL -----------------
     table_data = []
     for idx, l_name in enumerate(lines):
         actual_val = act_p4[idx] if idx < len(act_p4) else 0
@@ -557,7 +558,7 @@ with tab_details:
             arahan = "Kontribusi ide sangat baik." if actual_val > 0 else "Belum ada alokasi target bulanan."
         elif actual_val == 0:
             status_tag = "🔴 Critical"
-            arahan = f"Target bulanan ({target_monthly} ide) belum terpenuhi. Perlu koordinasi Supervisor."
+            arahan = f"Target bulanan ({target_monthly} ide) belum terpenuhi. Perlu evaluasi 4M & 5 Why."
         elif actual_val < target_monthly:
             gap_m = target_monthly - actual_val
             status_tag = "🟡 Warning"
@@ -584,6 +585,161 @@ with tab_details:
             "Pencapaian Bulanan (%)": st.column_config.ProgressColumn(
                 "Progress Bar", format="%.1f%%", min_value=0, max_value=100
             )
+        }
+    )
+
+    st.markdown("---")
+
+    # =========================================================================
+    # ELEMEN 1: ANALISA KONDISI YANG ADA (4M ANALYSIS - GAMBAR 1)
+    # =========================================================================
+    st.markdown("### 🔍 1. Analisa Kondisi Yang Ada (4M Analysis)")
+    st.caption("Evaluasi faktor Man, Machine, Material, dan Method terkait ketidaktercapaian target usulan SS.")
+    
+    data_4m = [
+        {
+            "No": 1, "Man": "✓", "Mc": "", "Mat": "", "Met": "",
+            "Control Item": "Pemahaman & Motivasi Karyawan",
+            "Control Point": "Tingkat Partisipasi Pengajuan SS",
+            "Standard": "100% Karyawan mengajukan min. 1 SS/bulan",
+            "Actual": "Hanya 35% karyawan yang aktif mengirimkan ide SS",
+            "Illustration": "-", "Judge": "NG"
+        },
+        {
+            "No": 2, "Man": "", "Mc": "", "Mat": "", "Met": "✓",
+            "Control Item": "Sistem Monitoring & Follow Up",
+            "Control Point": "Review Berkala Ide oleh Spv/Foreman",
+            "Standard": "Meeting review ide SS dilakukan 1x seminggu",
+            "Actual": "Belum ada agenda khusus review SS mingguan di Line",
+            "Illustration": "-", "Judge": "NG"
+        },
+        {
+            "No": 3, "Man": "", "Mc": "✓", "Mat": "", "Met": "",
+            "Control Item": "Akses Media Pendaftaran SS",
+            "Control Point": "Kemudahan Input Ide SS",
+            "Standard": "Input ide < 3 menit via Form/Portal",
+            "Actual": "Operator kesulitan akses PC/Portal saat jam kerja",
+            "Illustration": "-", "Judge": "NG"
+        },
+        {
+            "No": 4, "Man": "", "Mc": "", "Mat": "✓", "Met": "",
+            "Control Item": "Ketersediaan Media Fisik/Form",
+            "Control Point": "Stok Form Ide SS di Area Line",
+            "Standard": "Form cetak selalu tersedia di Dropbox SS",
+            "Actual": "Dropbox SS sering kosong dan tidak ter-update",
+            "Illustration": "-", "Judge": "NG"
+        }
+    ]
+    
+    st.dataframe(pd.DataFrame(data_4m), use_container_width=True, hide_index=True)
+
+    st.markdown("---")
+
+    # =========================================================================
+    # ELEMEN 2: ANALISA SEBAB AKIBAT (5 WHY ANALYSIS - GAMBAR 2)
+    # =========================================================================
+    st.markdown("### ❓ 2. Analisa Sebab Akibat (5 Why Analysis)")
+    st.caption("Penelusuran akar masalah secara mendalam berdasarkan hasil temuan 4M Analysis.")
+
+    data_5why = [
+        {
+            "NO": 1,
+            "PROBLEM DESCRIPTION": "Partisipasi Karyawan Rendah",
+            "STD": "100% Karyawan Submit SS",
+            "ACT": "Hanya 35% Karyawan Submit",
+            "4 M": "Man",
+            "WHY 1": "Karyawan ragu dan bingung cara menuliskan ide SS",
+            "WHY 2": "Tidak pernah mendapat bimbingan pembuatan SS",
+            "WHY 3": "Foreman/Spv belum pernah mengadakan sosialisasi penulisan SS",
+            "WHY 4": "Belum ada KPI/Target sosialisasi SS yang dibebankan ke Spv",
+            "WHY 5": "Belum ada standardisasi role WOS/SS untuk jajaran Leader"
+        },
+        {
+            "NO": 2,
+            "PROBLEM DESCRIPTION": "Review Ide di Line Terhambat",
+            "STD": "Review Mingguan (1x/Minggu)",
+            "ACT": "Review tidak berjalan rutin",
+            "4 M": "Method",
+            "WHY 1": "Spv menyatu dengan aktivitas pengerjaan rutin harian",
+            "WHY 2": "Tidak ada slot waktu khusus untuk evaluasi usulan ide",
+            "WHY 3": "Jadwal review SS belum masuk dalam Standar Kerja Mingguan Spv",
+            "WHY 4": "Belum ada kontrol dari Management/Dept Head terkait progress SS",
+            "WHY 5": "Sistem monitoring progress SS belum terintegrasi ke Daily Meeting"
+        }
+    ]
+    
+    st.dataframe(pd.DataFrame(data_5why), use_container_width=True, hide_index=True)
+
+    # ----------------- DIAGRAM ISHIKAWA / FISHBONE -----------------
+    st.markdown("#### 🐟 Diagram Tulang Ikan (Ishikawa Diagram)")
+    
+    fig_fishbone = go.Figure()
+
+    # Tulang Utama (Spine)
+    fig_fishbone.add_trace(go.Scatter(x=[0, 10], y=[0, 0], mode='lines+markers', line=dict(color='#1e1b4b', width=5), showlegend=False))
+    # Kepala Ikan
+    fig_fishbone.add_annotation(x=10, y=0, text="<b>TARGET SS<br>TIDAK TERCAPAI</b>", showarrow=True, arrowhead=2, arrowsize=1.5, arrowcolor="#ef4444", ax=40, ay=0, font=dict(size=12, color="#ffffff"), bgcolor="#ef4444", borderpad=6)
+
+    # Cabang 4M
+    # MAN (Atas Kiri)
+    fig_fishbone.add_trace(go.Scatter(x=[2, 3.5], y=[2, 0], mode='lines', line=dict(color='#6366f1', width=3), showlegend=False))
+    fig_fishbone.add_annotation(x=2, y=2, text="<b>MAN</b>", showarrow=False, font=dict(size=13, color="#4338ca"))
+    fig_fishbone.add_annotation(x=2.3, y=1.2, text="Kurang Bimbingan Spv", showarrow=False, font=dict(size=10))
+
+    # MACHINE (Atas Kanan)
+    fig_fishbone.add_trace(go.Scatter(x=[6, 7.5], y=[2, 0], mode='lines', line=dict(color='#6366f1', width=3), showlegend=False))
+    fig_fishbone.add_annotation(x=6, y=2, text="<b>MACHINE / TOOL</b>", showarrow=False, font=dict(size=13, color="#4338ca"))
+    fig_fishbone.add_annotation(x=6.3, y=1.2, text="Akses Portal/PC Terbatas", showarrow=False, font=dict(size=10))
+
+    # MATERIAL (Bawah Kiri)
+    fig_fishbone.add_trace(go.Scatter(x=[2, 3.5], y=[-2, 0], mode='lines', line=dict(color='#6366f1', width=3), showlegend=False))
+    fig_fishbone.add_annotation(x=2, y=-2, text="<b>MATERIAL</b>", showarrow=False, font=dict(size=13, color="#4338ca"))
+    fig_fishbone.add_annotation(x=2.3, y=-1.2, text="Form Fisik Sering Kosong", showarrow=False, font=dict(size=10))
+
+    # METHOD (Bawah Kanan)
+    fig_fishbone.add_trace(go.Scatter(x=[6, 7.5], y=[-2, 0], mode='lines', line=dict(color='#6366f1', width=3), showlegend=False))
+    fig_fishbone.add_annotation(x=6, y=-2, text="<b>METHOD</b>", showarrow=False, font=dict(size=13, color="#4338ca"))
+    fig_fishbone.add_annotation(x=6.3, y=-1.2, text="Tidak Ada Review Rutin", showarrow=False, font=dict(size=10))
+
+    fig_fishbone.update_layout(
+        xaxis=dict(showgrid=False, zeroline=False, showticklabels=False, range=[-0.5, 12]),
+        yaxis=dict(showgrid=False, zeroline=False, showticklabels=False, range=[-3, 3]),
+        height=320,
+        margin=dict(l=10, r=10, t=10, b=10),
+        paper_bgcolor='rgba(0,0,0,0)',
+        plot_bgcolor='rgba(0,0,0,0)'
+    )
+    st.plotly_chart(fig_fishbone, use_container_width=True)
+
+    st.markdown("---")
+
+    # =========================================================================
+    # ELEMEN 3: RENCANA PERBAIKAN (COUNTERMEASURE PLAN - GAMBAR 3)
+    # =========================================================================
+    st.markdown("### 📅 3. Rencana Perbaikan (Countermeasure Schedule)")
+    st.caption("Action plan terstruktur untuk mengatasi akar masalah lengkap dengan waktu pelaksanaan dan PIC.")
+
+    # Data Gantt Chart / Schedule
+    data_plan = [
+        {"No": 1, "Item Problem": "Partisipasi Karyawan Rendah (Man)", "Activity": "Sosialisasi & Coaching Penulisan SS", "Detail Activity": "Penyusunan Modul Simple SS", "PIC": "OS, Produksi", "W1": "Plan", "W2": "", "W3": "", "W4": ""},
+        {"No": 2, "Item Problem": "Partisipasi Karyawan Rendah (Man)", "Activity": "Sosialisasi & Coaching Penulisan SS", "Detail Activity": "Coaching Klinik SS per Line", "PIC": "Spv Line", "W1": "", "W2": "Plan", "W3": "Plan", "W4": ""},
+        {"No": 3, "Item Problem": "Review Ide Terhambat (Method)", "Activity": "Standardisasi System Monitoring", "Detail Activity": "Integrasi Review SS di Meeting LKG", "PIC": "Dept Head", "W1": "", "W2": "Plan", "W3": "", "W4": ""},
+        {"No": 4, "Item Problem": "Akses Portal Terbatas (Machine)", "Activity": "Penyediaan Digital & Physical Kiosk", "Detail Activity": "Pengadaan QR-Code Input SS via HP", "PIC": "IT / OS", "W1": "", "W2": "", "W3": "Plan", "W4": "Plan"},
+        {"No": 5, "Item Problem": "Evaluasi & Sustaining", "Activity": "Monitoring Pencapaian Target", "Detail Activity": "Evaluasi Pencapaian SS Bulanan", "PIC": "ALL", "W1": "", "W2": "", "W3": "", "W4": "Plan"}
+    ]
+
+    df_plan = pd.DataFrame(data_plan)
+    
+    # Kustomisasi Tampilan Tabel Rencana Perbaikan
+    st.dataframe(
+        df_plan,
+        use_container_width=True,
+        hide_index=True,
+        column_config={
+            "W1": st.column_config.TextColumn("M1 - W1"),
+            "W2": st.column_config.TextColumn("M1 - W2"),
+            "W3": st.column_config.TextColumn("M1 - W3"),
+            "W4": st.column_config.TextColumn("M1 - W4")
         }
     )
 
