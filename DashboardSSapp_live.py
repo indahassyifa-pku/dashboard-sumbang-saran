@@ -495,48 +495,81 @@ with tab_overview:
     """)
     st.markdown('</div>', unsafe_allow_html=True)
 
-# ----------------- TABEL & ARAHAN EXECUTIVE -----------------
+# ----------------- TABEL & ARAHAN EXECUTIVE (TAB 2) -----------------
 with tab_details:
-    st.subheader("🎯 Ringkasan Arahan & Action Plan")
+    st.subheader("🎯 Ringkasan Pencapaian Bulanan & Action Plan")
     
     table_data = []
     for idx, l_name in enumerate(lines):
         actual_val = act_p4[idx] if idx < len(act_p4) else 0
-        target_val = target_p4[idx] if idx < len(target_p4) else 0
-        achieve_pct = (actual_val / target_val * 100) if target_val > 0 else 0.0
+        target_yearly = target_p4[idx] if idx < len(target_p4) else 0
         
-        if actual_val == 0:
+        # Perhitungan Target Bulanan (Target Tahunan dibagi 12 bulan)
+        target_monthly = int(round(target_yearly / 12)) if target_yearly > 0 else 0
+        
+        # Hitung Persentase Pencapaian Terhadap Target Bulanan
+        achieve_monthly_pct = (actual_val / target_monthly * 100) if target_monthly > 0 else (100.0 if actual_val > 0 else 0.0)
+        
+        # Logika Status & Rekomendasi berdasarkan Target Bulanan
+        if target_monthly == 0:
+            if actual_val > 0:
+                status_tag = "🟢 Melampaui Target"
+                arahan = "Sangat baik, terdapat kontribusi ide meskipun tidak ada target spesifik."
+            else:
+                status_tag = "⚪ Tanpa Target"
+                arahan = "Belum ada alokasi target bulanan untuk area ini."
+        elif actual_val == 0:
             status_tag = "🔴 Belum Ada Ide"
-            arahan = "Sosialisasi ulang & dorong keterlibatan harian Tim Supervisor."
-        elif actual_val < target_val:
-            status_tag = "🟡 Dalam Progres"
-            arahan = f"Kurang {target_val - actual_val} ide untuk mencapai target tahunan."
+            arahan = f"Target bulanan ({target_monthly} ide) belum terpenuhi. Perlu sosialisasi dari Supervisor."
+        elif actual_val < target_monthly:
+            gap_m = target_monthly - actual_val
+            status_tag = "🟡 Kurang Target"
+            arahan = f"Kurang {gap_m} ide untuk memenuhi target bulan ini ({target_monthly} ide)."
         else:
-            status_tag = "🟢 Target Tercapai"
-            arahan = "Pencapaian sangat memuaskan, fokus pada eksekusi implementasi."
+            status_tag = "🟢 Target Bulanan Tercapai"
+            arahan = "Target bulanan terpenuhi. Pertahankan ritme pengajuan ide."
 
         table_data.append({
             "Line / Section": l_name,
-            "Target (1 Thn)": target_val,
+            "Target Bulanan": target_monthly,
             "Aktual": actual_val,
-            "Pencapaian (%)": f"{achieve_pct:.1f}%",
+            "Pencapaian Bulanan (%)": min(achieve_monthly_pct, 100.0), # Di-cap ke 100% untuk progress bar
             "Status": status_tag,
             "Rekomendasi Tindak Lanjut": arahan
         })
 
     df_summary = pd.DataFrame(table_data)
     
-    # Styled Table
+    # Render Tabel Interaktif Streamlit
     st.dataframe(
         df_summary,
         use_container_width=True,
         hide_index=True,
         column_config={
-            "Pencapaian (%)": st.column_config.ProgressColumn(
-                "Progres Pencapaian",
+            "Target Bulanan": st.column_config.NumberColumn(
+                "Target Bulanan",
+                help="Target ide bulanan (Target Tahunan / 12)",
+                format="%d"
+            ),
+            "Aktual": st.column_config.NumberColumn(
+                "Aktual Ide",
+                help="Jumlah ide yang masuk saat ini",
+                format="%d"
+            ),
+            "Pencapaian Bulanan (%)": st.column_config.ProgressColumn(
+                "Progress Pencapaian",
+                help="Persentase ketercapaian terhadap target bulanan",
                 format="%.1f%%",
                 min_value=0,
                 max_value=100,
+            ),
+            "Status": st.column_config.TextColumn(
+                "Status",
+                help="Indikator ketercapaian target bulanan"
+            ),
+            "Rekomendasi Tindak Lanjut": st.column_config.TextColumn(
+                "Rekomendasi Tindak Lanjut",
+                width="large"
             )
         }
     )
