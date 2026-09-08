@@ -361,15 +361,28 @@ for row in df_clean:
         act_p1[idx] += 1
         if st_val == 'CLOSE': act_p5[idx] += 1
 
-# ----------------- VISUAL CHARTS LAYOUT -----------------
-tab_overview, tab_details = st.tabs(["📊 Analisis Visual & Tren", "📋 Ringkasan & Arahan Tindak Lanjut"])
-
+# ----------------- VISUAL CHARTS LAYOUT & KESIMPULAN -----------------
 with tab_overview:
+    # ----------------- ROW 1 -----------------
     c1, c2 = st.columns(2)
+    
     with c1:
         st.markdown('<div class="chart-card">', unsafe_allow_html=True)
         st.plotly_chart(make_styled_combo_chart(months_display, target_p1, act_p1, "1. Total Ide Terdaftar (Target Akumulatif vs Aktual)"), use_container_width=True)
+        
+        # Kesimpulan Grafik 1
+        tot_act_p1 = sum(act_p1)
+        tot_tgt_p1 = target_p1[-1] if target_p1 else 0
+        gap_p1 = tot_act_p1 - tot_tgt_p1
+        p1_status = "menembus target" if gap_p1 >= 0 else f"kurang {abs(gap_p1)} ide dari target"
+        
+        st.info(f"""
+        📌 **Analisis Grafik 1:**
+        * **Total Terdaftar:** **{tot_act_p1} ide** dari target akhir tahun **{tot_tgt_p1} ide**.
+        * **Status:** Akumulasi ide terdaftar saat ini **{p1_status}**.
+        """)
         st.markdown('</div>', unsafe_allow_html=True)
+
     with c2:
         steps = ["Pengajuan Ide", "Persetujuan Ide", "Registrasi Ide", "Pengerjaan Ide", "Pembuatan Laporan", "Penilaian", "Pencairan Dana"]
         target_p2 = [0, 0, target_p1[2], 0, 0, 0, 0]
@@ -382,9 +395,22 @@ with tab_overview:
         
         st.markdown('<div class="chart-card">', unsafe_allow_html=True)
         st.plotly_chart(make_styled_combo_chart(steps, target_p2, act_p2, "2. Target vs Aktual per Tahapan SS"), use_container_width=True)
+        
+        # Kesimpulan Grafik 2
+        max_step_idx = int(np.argmax(act_p2)) if max(act_p2) > 0 else 0
+        steng_step = steps[max_step_idx]
+        steng_val = act_p2[max_step_idx]
+        
+        st.info(f"""
+        📌 **Analisis Grafik 2:**
+        * **Penumpukan Berkas:** Konsentrasi ide terbanyak saat ini ada pada tahap **{steng_step}** ({steng_val} ide).
+        * **Catatan:** Perlu akselerasi proses agar ide tidak tertahan di tahap awal dan bisa segera diimplementasikan.
+        """)
         st.markdown('</div>', unsafe_allow_html=True)
 
+    # ----------------- ROW 2 -----------------
     c3, c4 = st.columns(2)
+    
     with c3:
         dept_targets, dept_actuals = {}, {}
         for t in line_targets_3m:
@@ -401,6 +427,16 @@ with tab_overview:
         
         st.markdown('<div class="chart-card">', unsafe_allow_html=True)
         st.plotly_chart(make_styled_combo_chart(list(dept_targets.keys()), list(dept_targets.values()), list(dept_actuals.values()), "3. Target vs Aktual per Departemen (1 Tahun)"), use_container_width=True)
+        
+        # Kesimpulan Grafik 3
+        best_dept = max(dept_actuals, key=dept_actuals.get) if dept_actuals else "-"
+        best_dept_val = dept_actuals.get(best_dept, 0)
+        
+        st.info(f"""
+        📌 **Analisis Grafik 3:**
+        * **Kontributor Tertinggi:** Departemen **{best_dept}** memimpin pengajuan ide terbanyak (**{best_dept_val} ide**).
+        * **Evaluasi:** Dorong departemen lain yang kontribusinya masih jauh dari target tahunan.
+        """)
         st.markdown('</div>', unsafe_allow_html=True)
 
     with c4:
@@ -426,10 +462,32 @@ with tab_overview:
 
         st.markdown('<div class="chart-card">', unsafe_allow_html=True)
         st.plotly_chart(make_styled_combo_chart(lines, target_p4, act_p4, "4. Target vs Aktual per Line / Section (1 Tahun)"), use_container_width=True)
+        
+        # Kesimpulan Grafik 4
+        achieved_lines = sum(1 for a, t in zip(act_p4, target_p4) if a >= t and t > 0)
+        tot_lines = len(lines)
+        
+        st.info(f"""
+        📌 **Analisis Grafik 4:**
+        * **Pencapaian Area:** **{achieved_lines} dari {tot_lines} Line/Section** sudah memenuhi target ide tahunan.
+        * **Area Kritis:** Line yang belum ada kontribusi ide sama sekali perlu mendapat pengawasan langsung dari Supervisor.
+        """)
         st.markdown('</div>', unsafe_allow_html=True)
 
+    # ----------------- ROW 3 -----------------
     st.markdown('<div class="chart-card">', unsafe_allow_html=True)
     st.plotly_chart(make_styled_combo_chart(months_display, target_p5, act_p5, "5. Target Penyelesaian Aktivitas SS (Status Close)"), use_container_width=True)
+    
+    # Kesimpulan Grafik 5
+    tot_close_act = sum(act_p5)
+    tot_close_tgt = target_p5[-1] if target_p5 else 0
+    close_pct = (tot_close_act / total_all * 100) if total_all > 0 else 0.0
+    
+    st.info(f"""
+    📌 **Analisis Grafik 5 (Status Close):**
+    * **Penyelesaian Akhir:** Sebanyak **{tot_close_act} ide** telah berstatus **CLOSE** dari total **{total_all} ide** masuk ({close_pct:.1f}% penyelesaian).
+    * **Target Eksekusi:** Diperlukan penyelesaian hingga tahap implementasi agar ide yang diajukan tidak hanya berhenti pada tahap pendaftaran.
+    """)
     st.markdown('</div>', unsafe_allow_html=True)
 
 # ----------------- TABEL & ARAHAN EXECUTIVE -----------------
